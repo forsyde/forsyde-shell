@@ -11,9 +11,9 @@ function f2sdf3 () {
 	permissive_str="permissive=yes"
     fi
     mkdir -p sdf3
-    cp $F2SDF3_HOME/DTD/forsyde.dtd ir
-    cp $F2SDF3_HOME/DTD/forsyde_types.dtd ir
-    saxonb-xslt -s:$1 -xsl:$F2SDF3_HOME/f2sdf3.xsl -o:sdf3/log -dtd:off -ext:on $debug_str $permissive_str application-name=$projname types=$(cd ir; pwd)/types.xml inputFolder=$(cd ir; pwd)/ outputFolder=sdf3 2>&1 | tee sdf3/log | grep 'ERROR\|WARNING'
+    cp $FM2M_HOME/DTD/forsyde.dtd ir
+    cp $FM2M_HOME/DTD/forsyde_types.dtd ir
+    saxonb-xslt -s:$1 -xsl:$F2SDF3 -o:sdf3/log -dtd:off -ext:on $debug_str $permissive_str application-name=$projname types=$(cd ir; pwd)/types.xml inputFolder=$(cd ir; pwd)/ outputFolder=sdf3 2>&1 | tee sdf3/log | grep 'ERROR\|WARNING'
 }
 
 function info-f2sdf3 () {

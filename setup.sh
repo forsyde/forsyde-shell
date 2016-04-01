@@ -32,7 +32,7 @@ function uninstall-shell () {
 
 function install-dialog () {
   
-    cmd=(dialog --menu "Welcome to ForSyDe-Shell installer. What would you like to do?" 22 76 16)
+    cmd=(dialog --keep-tite --menu "Welcome to ForSyDe-Shell installer. What would you like to do?" 22 76 16)
     options=( 1 "Install/Update : installs libs & tools. Updates existing shell."
 	      2 "Reset shell    : installs libs & tools. Resets existing shell" 
 	      3 "Uninstall      : uninstalls libs, tools & the current shell.")
@@ -40,8 +40,8 @@ function install-dialog () {
     for choice in $choices; do
 	case $choice in
             1) install_general=on ;;
-            2) install_general=on; reset_shell ;;
-	    3) uninstall_shell ;;
+            2) install_general=on; reset-shell ;;
+	    3) uninstall-shell ;;
 	esac
     done
 
@@ -50,8 +50,7 @@ function install-dialog () {
              2 "ForSyDe-SystemC (prerquisite: SystemC)" $install_fsysc)
     choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
     clear
-    for choice in $choices
-    do
+    for choice in $choices; do
     	case $choice in
             1) install_fhask=on ;;
             2) install_fsysc=on ;;
@@ -60,14 +59,16 @@ function install-dialog () {
 
     if [ "$install_fsysc" = on ]; then
         dialog --backtitle "ForSyDe-SystemC" --title "System Information",  \
-	    --infobox 'Please wait while the setup gathers information about the system... \n\n (or press Ctrl+C to fill it in manually)' 10 55
+	    --infobox 'Please wait while the setup gathers information about the system... \n\n (or press Ctrl+C to fill it in manually)' \
+	    10 55
 	trap ' ' INT
 	syscpath=$(find /usr/local /opt ~ -type f -name "systemc.h"  2>/dev/null -print | head -n 1)
 	syscpath=$(dirname $(dirname $syscpath)) 
 	trap $(exit 0) INT
 
 	exec 3>&1
-	VALUES=$(dialog --backtitle "ForSyDe-SystemC"  --title "System Information" --form "Fill in the ingormation if not correct:"  15 86 0 \
+	VALUES=$(dialog --backtitle "ForSyDe-SystemC"  --title "System Information" --form "Fill in the information if not correct:"  \
+	    15 86 0 \
 	    "SystemC path: "                 1 1 "$syscpath"    1 15 70 0 \
 	    "SystemC libs (name): lib-"      2 1 "$arch_string" 2 26 60 0 \
 	    2>&1 1>&3)
@@ -125,7 +126,7 @@ function install-forsyde-systemc {
     echo "[SETUP] : Creating  shell environment variables for SystemC-ForSyDe"
     add-var "SYSC_ARCH" $arch_string
     add-var "SYSTEMC_HOME" "$syscpath"
-    add-var "LD_LIBRARY_PATH" "$syscpath/lib-$arch"
+    add-var "LD_LIBRARY_PATH" "$syscpath/lib-$arch_string"
     add-var "SC_FORSYDE" "$fsspath/src"
     add-var "FORSYDE_MAKEDEFS" "$scriptpath/Makefile.defs"
     add-intro " * ForSyDe-SystemC" " Libraries included:"
@@ -152,7 +153,7 @@ function install-f2dot {
 
     echo "[SETUP] : Creating  shell environment variables for f2dot"
     add-var "F2DOT" "$(cd $f2dotpath; pwd)/f2dot"
-    add-intro ' * f2dot           script : $F2DOT' " Tools included:"
+    add-intro ' * f2dot           script : \\\\$F2DOT' " Tools included:"
 }
 
 function install-forsyde-m2m {
@@ -163,8 +164,9 @@ function install-forsyde-m2m {
 
 
     echo "[SETUP] : Creating  shell environment variables for forsyde-m2m "
-    add-var "F2SDF3_HOME" "$(cd $fm2mpath; pwd)"
-    add-intro ' * f2sdf3          prefix : $F2SDF3_HOME' " Tools included:"
+    add-var "FM2M_HOME" "$(cd $fm2mpath; pwd)"
+    add-var "F2SDF3" "$(cd $fm2mpath; pwd)/f2sdf3.xsl"
+    add-intro ' * f2sdf3          script : \\\\$F2SDF3' " Tools included:"
 }
 
 function install-f2et {
@@ -200,7 +202,7 @@ function wrap-up () {
 	add-intro "$(source $scriptpath/general.sh; _print-general);" "$cmdstring";
     fi
 
-    sed -i 's/: \$/: \\\$/g' $shfile
+    #sed -i 's/: \$/: \\\$/g' $shfile
 }
 
 ####### MAIN ##########
