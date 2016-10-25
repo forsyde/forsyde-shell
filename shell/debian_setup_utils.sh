@@ -7,7 +7,7 @@ if [[ $(uname -m) ==  *x86_64* ]]; then arch_string='linux64'; fi
 # Dependencies #
 ################
 
-dep_general='build-essential git'
+dep_general='build-essential git dialog'
 dep_sysc='libboost-dev'
 dep_f2dot='python python-pygraphviz xdot'
 dep_valgrind='valgrind kcachegrind graphviz xml-twig-tools gnuplot'
