@@ -7,11 +7,12 @@ if [[ $(uname -m) ==  *x86_64* ]]; then arch_string='linux64'; fi
 # Dependencies #
 ################
 
-dep_general='build-essential git dialog'
+dep_dialog='dialog'
+dep_general='build-essential git'
 dep_sysc='libboost-dev'
 dep_f2dot='python python-pygraphviz xdot'
 dep_valgrind='valgrind kcachegrind graphviz xml-twig-tools gnuplot'
-dep_fm2m='libsaxonb-java'
+dep_fm2m='default-jre libsaxonb-java'
 
 ###########
 # Methods #

@@ -31,7 +31,8 @@ function uninstall-shell () {
 }
 
 function install-dialog () {
-  
+    install_dependencies $dep_dialog
+
     cmd=(dialog --keep-tite --menu "Welcome to ForSyDe-Shell installer. What would you like to do?" 22 76 16)
     options=( 1 "Install/Update : installs libs & tools. Updates existing shell."
 	      2 "Reset shell    : installs libs & tools. Resets existing shell" 
