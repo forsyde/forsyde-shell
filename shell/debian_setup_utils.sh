@@ -77,15 +77,21 @@ function force-export-var {
     echo "export $1=$2" >> $shconf 
 }
 
+# Checks if a provided url contains a file or not.
+# $1 : ftp url
+# $2 : validation string (usually type of file or size, etc...)
 function check_url(){
     echo "    Sniffing url $1"
-    if [[ ! `wget -S --spider $1 2>&1 | egrep 'HTTP.* 200 OK|File .* exists'` ]]; then 
+    if [[ ! `wget -S --spider $1 2>&1 | egrep "$2"` ]]; then 
 	echo "    WARNING: Broken link '$1'"
 	return 1
     fi
     return 0
 }
 
+# Downloads a file from a ftp url.
+# $1 : output file
+# $2 : ftp url
 function download_url(){
     echo "    Downloading file '$1' from $2 "
     wget --progress=bar:force $2 -P . 2>&1 
@@ -94,3 +100,4 @@ function download_url(){
     fi	
     return 0
 }
+

@@ -11,6 +11,8 @@ tooldir=$homedir/tools
 projdir=$homedir/workspace
 
 # Sources and repositories for tools
+pkg_systemc='systemc-2.3.1a.tar.gz'
+url_systemc='http://accellera.org/images/downloads/standards/systemc/systemc-2.3.1a.tar.gz'
 repo_fsysc='https://github.com/ugeorge/ForSyDe-SystemC.git -b type-introspecion --single-branch'
 repo_f2dot='https://github.com/forsyde/f2dot.git'
 repo_fm2m='https://github.com/ugeorge/forsyde-m2m.git'
@@ -74,25 +76,34 @@ function install-dialog () {
     done
 
     if [ "$__install__fsysc" = on ]; then
-        dialog --backtitle "ForSyDe-SystemC" \
-	       --title "System Information",  \
-	       --infobox 'Please wait while the setup gathers information about the system... \n\n (or press Ctrl+C to fill it in manually)' \
-	       10 55
-	trap ' ' INT
-	syscpath=$(find /usr/local /opt ~ -type f -name "systemc.h"  2>/dev/null -print | head -n 1)
-	syscpath=$(dirname $(dirname $syscpath)) 
-	trap $(exit 0) INT
+	source shell/systemc-setup.sh
+	cmd=(dialog --keep-tite --menu "Is SystemC installed on this computer?" 22 76 16)
+	options=( 1 "Yes, attempt to find it and include its path in the shell."
+		  2 "Yes, provide its path manually in the next dialog." 
+		  3 "No, attempt to install it locally from Acclelera website."
+		  4 "No, abort setup and retry after manual installation.")
+	choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
+	for choice in $choices; do
+	    case $choice in
+		1) search-systemc-path ;;
+		2) ;;
+		3) install-systemc-locally ;;
+		4) exit 1 ;;
+	    esac
+	done
 
 	exec 3>&1
-	VALUES=$(dialog --backtitle "ForSyDe-SystemC"  --title "System Information" --form "Fill in the information if not correct:"  \
-	    15 86 0 \
-	    "SystemC path: "                 1 1 "$syscpath"    1 15 70 0 \
-	    "SystemC libs (name): lib-"      2 1 "$arch_string" 2 26 60 0 \
-	    2>&1 1>&3)
+	VALUES=$(dialog --backtitle "ForSyDe-SystemC" \
+			--title "System Information" \
+			--form "Fill in the information if not correct:"  \
+			15 86 0 \
+			"SystemC path: "                 1 1 "$syscpath"    1 15 70 0 \
+			"SystemC libs (name): lib-"      2 1 "$arch_string" 2 26 60 0 \
+			2>&1 1>&3)
 	exec 3>&-
 	syscpath=$(echo "$VALUES" |sed -n -e '1{p;q}')
 	arch_string=$(echo "$VALUES" |sed -n -e '2{p;q}')
-
+	
 	cmd=(dialog --separate-output --checklist "What other features would you like to install?" 22 76 16)
 	options=(1 "demo        : a collection of ForSyDe-SystemC demonstrators"  $__install__fsysc_demo  
 	         2 "f2dot       : plotting XML-based IR"                          $__install__f2dot  
