@@ -3,7 +3,7 @@ function f2sdf3 () {
 	echo "The working directory is not a ForSyDe project. Abandoning command!"
 	return
     fi
-    projname=$(basename $(pwd) | sed 's|-|_|g')
+    projname=$(basename $(pwd) | tr - _)
     if [[ "${@:2}" == *"-d"* ]]; then
 	debug_str="debug=yes"
     fi

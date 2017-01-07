@@ -3,7 +3,7 @@ function _exec_to_csv () {
 	ir/*.xml | grep -o -P '(?<=value=").*(?=")' | sort -u)
     echo "" > $2
     for func in $func_list; do
-        echo "$func $(less $1 | grep -e $func | awk '{print $1}' | sed 's|,||g')" >> $2
+        echo "$func $(less $1 | grep -e $func | awk '{print $1}' | tr -d ,)" >> $2
     done
 }
 

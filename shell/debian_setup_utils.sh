@@ -18,11 +18,15 @@ dep_fm2m='default-jre libsaxonb-java'
 # Methods #
 ###########
 
-function install_dependencies () {
+function install-application () {
+    if ! $(command -v $1 >/dev/null); then sudo apt-get install -y $@; fi
+}
+
+function install-dependencies () {
     if ! $(dpkg -l $@ &> /dev/null); then sudo apt-get install -y $@; fi
 }
 
-function clone_repo () {
+function clone-repo () {
     repo_string="${@:1:$#-1}"
     dest_dir="${!#}"
     if [ ! -d $dest_dir ]; then
@@ -34,24 +38,43 @@ function clone_repo () {
     fi
 }
 
-function add-var {
-    if ! grep -q "$1" $shfile ; then
-	sed -i "s|#vars end|export $1=$2\n#vars end|g" $shfile
+
+# Force-adds a variable to $shconf.
+# $1 : variable name as string (will be expanded)
+# $2 : variable value as string
+function force-add-var {
+    source $shconf
+    name=$1 
+    value=(${!name})
+    if [ -n "$value" ]; then	
+	grep -v "$1=" $shconf > temp && mv temp $shconf
+    fi
+    echo "$1=$2" >> $shconf 
+}
+
+# Adds a variable to $shconf if it is not initialized and exports it.
+# $1 : variable name as string (will be expanded)
+# $2 : variable value as string
+function add-export-var {
+    source $shconf
+    name=$1 
+    value=(${!name})
+    if [ -z "$value" ]; then
+	echo "export $1=$2" >> $shconf 
     fi
 }
 
-function add-script {
-    if ! grep -q "$1" $shfile ; then
-	sed -i "s|#scripts end|source $1\n#scripts end|g" $shfile
+# Force-adds a variable to $shconf and exports it.
+# $1 : variable name as string (will be expanded)
+# $2 : variable value as string
+function force-export-var {
+    source $shconf
+    name=$1 
+    value=(${!name})
+    if [ -n "$1" ]; then	
+	grep -v "$1=" $shconf > temp && mv temp $shconf
     fi
-}
-
-function add-intro {
-    echo "$1" | while read line; do
-	if ! grep -q "$line" $shfile ; then
-	    sed -i "s|$2|$2\n$line|g" $shfile
-	fi
-    done 
+    echo "export $1=$2" >> $shconf 
 }
 
 function check_url(){

@@ -26,7 +26,7 @@ If you need to reset the shell (without reinstalling the tools) type
     ./setup.sh --no-dialog --reset     # non-interactive. Resets shell if one exists already
     ./setup.sh --no-dialog --uninstall # non-interactive. Uninstalls everything.
 
-In non-interactive mode the installation configuration must be set in `shell/default.conf`
+In non-interactive mode the installation configuration must be set in `setup.conf`
 
 ### Running the shell
 
