@@ -2,13 +2,13 @@
 
 The current project provides a set of scripts to set up the ForSyDe ecosystem for the demonstrator applications and create a shell environment with the necessary commands.
 
-### Dependencies
-
-For the ForSyDe-SystemC projects you need to install [SystemC](http://www.accellera.org/downloads/standards/systemc) manually on your workstation. 
-
 ### Installation
 
-Currently the installation script works only on Debian distributions of Linux. On other OS, for the time being you can study `setup.sh` to install manually all dependencies.
+Currently the installation script works on :
+ * modern Debian distributions of Linux (tested with Ubuntu 12.04, Ubuntu 14.01). Dependencies are installed with [APT](https://wiki.debian.org/Apt).
+ * OS X ( tested with 10.11 El Capitan). Dependencies are installed with [MacPorts](https://www.macports.org).
+ 
+On other OS, for the time being you can study `setup.sh` to install manually all dependencies.
 
 To install all dependencies and create the shell simply run from the current folder:
 
@@ -27,6 +27,10 @@ If you need to reset the shell (without reinstalling the tools) type
     ./setup.sh --no-dialog --uninstall # non-interactive. Uninstalls everything.
 
 In non-interactive mode the installation configuration must be set in `setup.conf`
+
+### Dependencies
+
+The setup utility should take care of all dependencies for your OS according to the setup options. In case a something fails to install, try to follow the terminal messages, install that particular dependency manually and retry the setup.
 
 ### Running the shell
 
