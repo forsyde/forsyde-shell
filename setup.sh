@@ -22,8 +22,15 @@ repo_fsysc_apps='https://github.com/forsyde/forsyde-systemc-demonstrators.git'
 source setup.conf
 
 # Load utilities for the supported OSs
-source shell/debian_setup_utils.sh
-
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    source shell/debian_setup_utils.sh
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    source shell/osx_setup_utils.sh
+else
+    echo "Unknown OS"
+    exit 1
+fi
+    
 # The reset method only removes the generated script and
 # configurations.
 function reset-shell () {
@@ -101,9 +108,9 @@ function install-dialog () {
 			"SystemC libs (name): lib-"      2 1 "$arch_string" 2 26 60 0 \
 			2>&1 1>&3)
 	exec 3>&-
-	syscpath=$(echo "$VALUES" |sed -n -e '1{p;q}')
-	arch_string=$(echo "$VALUES" |sed -n -e '2{p;q}')
-	
+	syscpath=$(echo "$VALUES" | head -1 | tail -1)
+	arch_string=$(echo "$VALUES" | head -2 | tail -1)
+
 	cmd=(dialog --separate-output --checklist "What other features would you like to install?" 22 76 16)
 	options=(1 "demo        : a collection of ForSyDe-SystemC demonstrators"  $__install__fsysc_demo  
 	         2 "f2dot       : plotting XML-based IR"                          $__install__f2dot  
@@ -128,10 +135,7 @@ function init-shell () {
     echo "[SETUP] : Installing shell dependencies"
     install-dependencies $dep_general
 
-    touch forsyde-shell
-    echo '#!/bin/bash' > forsyde-shell
-    echo 'gnome-terminal -e "bash --rcfile shell/forsyde-shell.sh"' >> forsyde-shell
-    chmod +x forsyde-shell
+    create_runner
 
     force-add-var "__install__general" "on"
     add-export-var "SHELL_ROOT" "$(pwd)"
@@ -325,6 +329,7 @@ if [[ $@ == *"-h"* ]]; then
     help-menu
     exit 1
 fi
+#install-prerequisites
 
 if [[ $@ == *"-no-dialog"* ]]; then
     if [[ $@ == *"-reset"* ]]; then reset-shell; fi
@@ -344,9 +349,3 @@ if [ "$__install__fm2m" = on ];       then install-forsyde-m2m; fi
 if [ "$__install__valgrind" = on ];   then install-f2et; fi
 
 wrap-up
-
-#read -p "Would you like to install the SDF3 tool chain? [y]" yn
-#case $yn in
-#    [Nn]* ) ;;
-#    * ) source shell/__obsolete.sh; install-sdf3;;
-#esac

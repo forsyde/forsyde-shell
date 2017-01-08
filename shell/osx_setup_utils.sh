@@ -1,36 +1,55 @@
 #!/bin/bash
 
-arch_string='linux'
-if [[ $(uname -m) ==  *x86_64* ]]; then arch_string='linux64'; fi
+arch_string='macosx'
+if [[ $(uname -m) ==  *x86_64* ]]; then arch_string='macosx64'; fi
+
+if [[ $(port installed dialog | grep "None" ) ]]; then sudo port install dialog; fi
+
 
 ################
 # Dependencies #
 ################
 
-dep_dialog='dialog'
-dep_general='build-essential git'
-dep_sysc='libboost-dev'
-dep_f2dot='python python-pygraphviz xdot'x2
-dep_valgrind='valgrind kcachegrind graphviz xml-twig-tools gnuplot'
-dep_fm2m='default-jre libsaxonb-java'
+dep_general='git'
+dep_sysc='boost wget'
+dep_f2dot='py-pygraphviz graphviz-gui'
+dep_valgrind='valgrind graphviz gnuplot'
+#dep_fm2m='saxon'
+
+xcode-select --install
+
+line_feed=$'\n';
+
 
 ###########
 # Methods #
 ###########
 
+
+function update_package_manager () {
+    sudo port selfupdate
+}
+
 function create_runner () {
     touch forsyde-shell
     echo '#!/bin/bash
-gnome-terminal -e "bash --rcfile shell/forsyde-shell.sh"' > forsyde-shell
+open -a Terminal.app shell/osx_runner' > forsyde-shell
     chmod +x forsyde-shell
+
+    touch shell/osx_runner
+    echo "#!/bin/bash
+bash --rcfile ${homedir}/shell/forsyde-shell.sh" > shell/osx_runner
+    chmod +x shell/osx_runner
 }
 
 function install-application () {
-    if ! $(command -v $1 >/dev/null); then sudo apt-get install -y $@; fi
+    if ! $(command -v $1 >/dev/null); then sudo port install $@; fi
 }
 
 function install-dependencies () {
-    if ! $(dpkg -l $@ &> /dev/null); then sudo apt-get install -y $@; fi
+    for dep in $@; do
+	if  [[ $(port installed $dep | grep "None" ) ]]; then sudo port install $@; fi
+    done
 }
 
 function clone-repo () {
@@ -107,4 +126,3 @@ function download_url(){
     fi	
     return 0
 }
-
