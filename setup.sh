@@ -160,7 +160,7 @@ function install-forsyde-systemc {
     echo "[SETUP] : Creating  shell environment variables for SystemC-ForSyDe"
     force-add-var "__install__fsysc" "on"
     add-export-var "SYSC_ARCH"        $arch_string
-    force-export-var "SYSTEMC_HOME"     "$syscpath"
+    force-export-var "SYSTEMC_HOME"   "$syscpath"
     add-export-var "LD_LIBRARY_PATH"  "$syscpath/lib-$arch_string"
     add-export-var "SC_FORSYDE"       "$fsspath/src"
     add-export-var "FORSYDE_MAKEDEFS" "$scriptpath/Makefile.defs"
