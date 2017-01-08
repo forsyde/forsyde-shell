@@ -12,10 +12,10 @@ function __pull {
 function pull  {
     workdir=$(pwd)
     case $1 in
-	-w* ) __pull $DEMO_HOME/$projdir ;;
-	-l* ) __pull $DEMO_HOME/$libdir ;;
-	-t* ) __pull $DEMO_HOME/$tooldir ;;
-	* )   __pull $DEMO_HOME ;;
+	-w* ) __pull $SHELL_ROOT/$projdir ;;
+	-l* ) __pull $SHELL_ROOT/$libdir ;;
+	-t* ) __pull $SHELL_ROOT/$tooldir ;;
+	* )   __pull $SHELL_ROOT ;;
     esac
     cd $workdir
 }

@@ -1,9 +1,14 @@
+
 #!/bin/bash
 
 # Global variables
 version=$(git describe --abbrev=4 --always --tags)
 homedir=$(pwd)
 scriptpath=$(cd shell; pwd)
+
+setuppath=$scriptpath/setup
+setupconf=$setuppath/setup.conf
+
 shfile=$scriptpath/forsyde-shell.sh
 shconf=$scriptpath/shell.conf
 libdir=$homedir/libs
@@ -22,10 +27,11 @@ repo_fsysc_apps='https://github.com/forsyde/forsyde-systemc-demonstrators.git'
 source setup.conf
 
 # Load utilities for the supported OSs
+source $setuppath/common_setup_utils.sh
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
-    source shell/debian_setup_utils.sh
+    source $setuppath/debian_setup_utils.sh
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-    source shell/osx_setup_utils.sh
+    source $setuppath/osx_setup_utils.sh
 else
     echo "Unknown OS"
     exit 1
@@ -34,10 +40,10 @@ fi
 # The reset method only removes the generated script and
 # configurations.
 function reset-shell () {
-    rm $shfile
-    rm $shconf
-    rm forsyde-shell
+    rm -f $shfile $shconf $setupconf
+    rm -f forsyde-shell
     touch $shconf;
+    touch $setupconf
 }
 
 # The uninstall method resets (removes) the contents of the root
@@ -45,7 +51,7 @@ function reset-shell () {
 function uninstall-shell () {
     read -p "Are you sure you want to completely remove the shell along with the install tools and libraries? [N]" yn
     case $yn in
-	[Yy]* ) rm -rf $shfile $shconf $libdir $tooldir $projdir forsyde-shell ;;
+	[Yy]* ) rm -rf $shfile $shconf $setupconf $libdir $tooldir $projdir forsyde-shell ;;
 	* ) ;;
     esac
     exit 0
@@ -56,7 +62,7 @@ function uninstall-shell () {
 function install-dialog () {
     install-application $dep_dialog
 
-    source $shconf #load previous config
+    source $setupconf #load previous config
     cmd=(dialog --keep-tite --menu "Welcome to ForSyDe-Shell installer. What would you like to do?" 22 76 16)
     options=( 1 "Install/Update : installs libs & tools. Updates shell environment."
 	      2 "Reset shell    : installs libs & tools. Resets shell environment." 
@@ -65,7 +71,7 @@ function install-dialog () {
     for choice in $choices; do
 	case $choice in
             1) __install__general=on ;;
-            2) __install__general=on; reset-shell ;;
+            2) reset-shell; __install__general=on ;;
 	    3) uninstall-shell ;;
 	esac
     done
@@ -83,7 +89,7 @@ function install-dialog () {
     done
 
     if [ "$__install__fsysc" = on ]; then
-	source shell/systemc-setup.sh
+	source $setuppath/systemc-setup.sh
 	cmd=(dialog --keep-tite --menu "Is SystemC installed on this computer?" 22 76 16)
 	options=( 1 "Yes, attempt to find it and include its path in the shell."
 		  2 "Yes, provide its path manually in the next dialog." 
@@ -137,13 +143,13 @@ function init-shell () {
 
     create_runner
 
-    force-add-var "__install__general" "on"
-    add-export-var "SHELL_ROOT" "$(pwd)"
+    force-add-var $setupconf "__install__general" "on"
+    add-export-var $shconf "SHELL_ROOT" "$(pwd)"
 }
 
 function install-forsyde-haskell {
     echo "[SETUP] : Currently ForSyDe-Haskell is not supported"
-    force-add-var "__install__fhask" "off"
+    force-add-var $setupconf "__install__fhask" "off"
 }
 
 
@@ -162,12 +168,13 @@ function install-forsyde-systemc {
     fsspath=$(cd $libdir/ForSyDe-SystemC; pwd)
 
     echo "[SETUP] : Creating  shell environment variables for SystemC-ForSyDe"
-    force-add-var "__install__fsysc" "on"
-    add-export-var "SYSC_ARCH"        $arch_string
-    force-export-var "SYSTEMC_HOME"     "$syscpath"
-    add-export-var "LD_LIBRARY_PATH"  "$syscpath/lib-$arch_string"
-    add-export-var "SC_FORSYDE"       "$fsspath/src"
-    add-export-var "FORSYDE_MAKEDEFS" "$scriptpath/Makefile.defs"
+    force-add-var    $setupconf "__install__fsysc" "on"
+    force-add-var    $setupconf "syscpath"      "$syscpath"
+    add-export-var   $shconf "SYSC_ARCH"         $arch_string
+    force-export-var $shconf "SYSTEMC_HOME"     "$syscpath"
+    add-export-var   $shconf "LD_LIBRARY_PATH"  "$syscpath/lib-$arch_string"
+    add-export-var   $shconf "SC_FORSYDE"       "$fsspath/src"
+    add-export-var   $shconf "FORSYDE_MAKEDEFS" "$scriptpath/Makefile.defs"
 }
 
 function install-apps () {
@@ -177,8 +184,8 @@ function install-apps () {
     clone-repo $1 $appdir
 
     echo "[SETUP] : Creating  shell environment variables for applications"
-    force-add-var "__install__fsysc_demo" "on"
-    force-export-var "WORKSPACE" "${projdir}"
+    force-add-var $setupconf "__install__fsysc_demo" "on"
+    force-export-var $shconf "WORKSPACE" "${projdir}"
 }
 
 function install-f2dot {
@@ -188,26 +195,33 @@ function install-f2dot {
     clone-repo $repo_f2dot $f2dotpath
 
     echo "[SETUP] : Creating  shell environment variables for f2dot"
-    force-add-var "__install__f2dot" "on"
-    add-export-var "F2DOT" "$(cd $f2dotpath; pwd)/f2dot"
+    force-add-var $setupconf "__install__f2dot" "on"
+    add-export-var $shconf "F2DOT" "$(cd $f2dotpath; pwd)/f2dot"
 }
 
 function install-forsyde-m2m {
-    echo "[SETUP] : Installing dependencies for forsyde-m2m"
-    install-dependencies $dep_fm2m
-    fm2mpath=$tooldir/forsyde-m2m
-    clone-repo $repo_fm2m $fm2mpath
-
-    echo "[SETUP] : Creating  shell environment variables for forsyde-m2m "
-    force-add-var "__install__fm2m" "on"
-    add-export-var "FM2M_HOME" "$(cd $fm2mpath; pwd)"
-    add-export-var "F2SDF3"    "$(cd $fm2mpath; pwd)/f2sdf3.xsl"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        echo "[SETUP] : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        echo "[SETUP] : will *NOT* install 'forsyde-m2m' due to unmet dependencies"
+        echo "[SETUP] : if needed, install it manually according to the manual"
+        echo "[SETUP] : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    else
+	echo "[SETUP] : Installing dependencies for forsyde-m2m"
+	install-dependencies $dep_fm2m
+	fm2mpath=$tooldir/forsyde-m2m
+	clone-repo $repo_fm2m $fm2mpath
+	
+	echo "[SETUP] : Creating  shell environment variables for forsyde-m2m "
+	force-add-var $setupconf "__install__fm2m" "on"
+	add-export-var $shconf "FM2M_HOME" "$(cd $fm2mpath; pwd)"
+	add-export-var $shconf "F2SDF3"    "$(cd $fm2mpath; pwd)/f2sdf3.xsl"
+    fi
 }
 
 function install-f2et {
     echo "[SETUP] : Installing valgrind"
     install-dependencies $dep_valgrind
-    force-add-var "__install__valgrind" "on"
+    force-add-var $setupconf "__install__valgrind" "on"
 }
 
 function wrap-up () {
@@ -257,16 +271,16 @@ function wrap-up () {
     echo											>> $shfile
     echo " Tools included:"       								>> $shfile
     if [ "$__install__f2dot" = on ]; then
-	echo ' * f2dot           script path : $F2DOT'					        >> $shfile
+	echo ' * f2dot           script path : \$F2DOT'					        >> $shfile
     fi
     if [ "$__install__fm2m" = on ]; then
-	echo ' * f2sdf3          script path : $F2SDF3'					        >> $shfile
+	echo ' * f2sdf3          script path : \$F2SDF3'	       			        >> $shfile
     fi
     echo											>> $shfile
     if [ "$__install__fsysc_demo" = on ]; then
 	echo " ForSyDe-SystemC applications:"							>> $shfile
-	for app in $(find $projdir -type f -name '.project' -printf '%P\n'); do
-	    appname=$(dirname $app)
+	for app in $(find $projdir -type f -name '.project'); do
+	    appname=$(relative-path $projdir $(dirname $app))
 	    echo " * $appname"       								>> $shfile	
 	done
     fi
@@ -277,8 +291,13 @@ function wrap-up () {
     echo '"'											>> $shfile
     echo											>> $shfile
     echo "cd \$WORKSPACE"									>> $shfile
-    echo "export LS_OPTIONS='--color=auto'"							>> $shfile
-    echo 'eval "`dircolors`"'									>> $shfile
+    if [[ "$OSTYPE" == "linux-gnu" ]]; then
+	echo "export LS_OPTIONS='--color=auto'"							>> $shfile
+	echo 'eval "`dircolors`"'							       	>> $shfile
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+	echo "export LS_OPTIONS='-G'"	        						>> $shfile
+	#echo 'export CLICOLOR=YES'							       	>> $shfile
+    fi
     echo "alias ls='ls \$LS_OPTIONS'"								>> $shfile
     echo											>> $shfile
     echo "function list-commands () {"								>> $shfile
@@ -339,7 +358,10 @@ else
     install-dialog;
 fi
 
-source $shconf #load previous config
+#load previous config
+touch $setupconf
+source $setupconf
+
 if [ "$__install__general" = on ];    then init-shell; fi
 if [ "$__install__fhask" = on ];      then install-forsyde-haskell; fi
 if [ "$__install__fsysc" = on ];      then install-forsyde-systemc; fi
