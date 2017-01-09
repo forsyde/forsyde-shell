@@ -46,7 +46,6 @@ function add-export-var {
     # name=$2
     #value=(${!name})
     value=$(get-var $1 $2)
-    echo $value
     if [ -z "$value" ]; then
 	echo "export $2=$3" >> $1 
     fi

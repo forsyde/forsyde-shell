@@ -30,7 +30,7 @@ Open the newly created shell by running
 
     ./forsyde-shell
     
-which starts in the working directory `workspace`. The welcome screen contains enough information to get started, as well as the two commands:
+which starts in the working directory `workspace` (if created). The welcome screen contains enough information to get started, as well as the two key commands:
 
     list-commands    # lists built-in or useful commands
     help-<command>   # prints the usage manual for <command>
@@ -54,7 +54,7 @@ A fully set up shell has the following structure:
 
 #### ForSyDe-SystemC project structure
 
-A project may be anywhere accessible on the file system, although it is recommended to be somewhere under `workspace`. In order to minimize the overhead of setting or passing parameters around or dealing with complex scripts, ForSyDe-Shell operates on the following conventional structure:
+A project may be anywhere accessible on the file system, although it is recommended to be somewhere under `workspace`. In order to minimize the overhead of setting or passing parameters around or dealing with complex scripts, ForSyDe-Shell operates on the following conventional project structure: 
 
     application-name/ # important since it will appear in several places
     ├── .project      # dummy file that tells the shell that this is a project         
@@ -68,6 +68,12 @@ A project may be anywhere accessible on the file system, although it is recommen
     │   ├── *.xml     # most of the tools. This means that you must make sure that ForSyDe
     │   └── *.dtd     # introspection dumps XML files there.      
     └── *             # other generated folders, depending on the tools ran. 
+
+This can be simplified using:
+
+    mkdir <application-name>
+    cd <application-name>
+    init-sysc-project
 
 #### Environment variables:
 
