@@ -2,7 +2,7 @@ CC     = g++
 OPT    = -O0 -std=c++11
 DEBUG  = -g
 SYSDIR = -I $(SYSTEMC_HOME)/include
-INCDIR = -I. -I.. $(SYSDIR) -I$(SC_FORSYDE)
+INCDIR = -I. -I.. $(SYSDIR) -I$(SC_FORSYDE) -I/opt/local/include
 LIBDIR = -L. -L.. -L$(SYSTEMC_HOME)/lib-$(SYSC_ARCH) 
 
 ## Build with maximum gcc warning level

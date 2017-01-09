@@ -1,9 +1,17 @@
 function _exec_to_csv () {
-    func_list=$(xml_grep "process_network/leaf_process/process_constructor/argument[@name='_func']" \
-	ir/*.xml | grep -o -P '(?<=value=").*(?=")' | sort -u)
+    if [[ "$OSTYPE" == "linux-gnu" ]]; then
+	func_list=$(xml_grep "process_network/leaf_process/process_constructor/argument[@name='_func']" \
+			     ir/*.xml | grep -o -P '(?<=value=").*(?=")' | sort -u)
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+	func_list=$(python -c "import xml.etree.ElementTree as ET; import glob; print '\n'.join([node.get('value') for name in glob.glob('ir/*.xml') for node in ET.parse(name).findall(\"./leaf_process/process_constructor/argument[@name='_func']\")])")
+    else
+	echo "Unknown OS! Cannot extract runtime execution"
+	exit 1
+    fi
+    echo "Harvesting info about the following functions:\n $func_list"
     echo "" > $2
     for func in $func_list; do
-        echo "$func $(less $1 | grep -e $func | awk '{print $1}' | sed 's|,||g')" >> $2
+        echo "$func $(less $1 | grep -e $func | awk '{print $1}' | tr -d ,)" >> $2
     done
 }
 

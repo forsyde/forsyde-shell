@@ -2,13 +2,13 @@
 
 The current project provides a set of scripts to set up the ForSyDe ecosystem for the demonstrator applications and create a shell environment with the necessary commands.
 
-### Dependencies
-
-For the ForSyDe-SystemC projects you need to install [SystemC](http://www.accellera.org/downloads/standards/systemc) manually on your workstation. 
-
 ### Installation
 
-Currently the installation script works only on Debian distributions of Linux. On other OS, for the time being you can study `setup.sh` to install manually all dependencies.
+Currently the installation script works on :
+ * modern Debian distributions of Linux (tested with Ubuntu 14.04, Ubuntu 16.01). Dependencies are installed with [APT](https://wiki.debian.org/Apt).
+ * OS X ( tested with 10.11 El Capitan). Dependencies are installed with [MacPorts](https://www.macports.org).
+ 
+On other OS, for the time being you can study `setup.sh` to install manually all dependencies.
 
 To install all dependencies and create the shell simply run from the current folder:
 
@@ -16,17 +16,13 @@ To install all dependencies and create the shell simply run from the current fol
 
 and follow the instructions.
 
-In case you need to update your installation options you can run `setup.sh` again and it will just update the shell, without modifying the existing options.
-
 If you want to perform the installation in non-interactive mode, you can run `setup.sh` with the following parameters:
-
-If you need to reset the shell (without reinstalling the tools) type
 
     ./setup.sh --no-dialog             # non-interactive. Updates shell if one exists already
     ./setup.sh --no-dialog --reset     # non-interactive. Resets shell if one exists already
     ./setup.sh --no-dialog --uninstall # non-interactive. Uninstalls everything.
 
-In non-interactive mode the installation configuration must be set in `shell/default.conf`
+In non-interactive mode the installation configuration must be set in `setup.conf`
 
 ### Running the shell
 
@@ -34,7 +30,10 @@ Open the newly created shell by running
 
     ./forsyde-shell
     
-which starts in the working directory `models`. The welcome screen contains enough information for getting started. All in-built commands come with usage manuals which can be printed by calling `help-<command>` inside the shell.
+which starts in the working directory `workspace`. The welcome screen contains enough information to get started, as well as the two commands:
+
+    list-commands    # lists built-in or useful commands
+    help-<command>   # prints the usage manual for <command>
 
 **OBS**: we recommend studying the available commands by typing `list-commands` before starting to use the shell.
 
@@ -56,14 +55,28 @@ A fully set up shell has the following structure:
 #### ForSyDe-SystemC project structure
 
 A project may be anywhere accessible on the file system, although it is recommended to be somewhere under `workspace`. In order to minimize the overhead of setting or passing parameters around or dealing with complex scripts, ForSyDe-Shell operates on the following conventional structure:
- * `application-name/` : important since it will appear in several places
-     - `.project` : dummy file that tells the shell that this is a project
-     - `Makefile` : created with `generate-makefile` and then modified accordingly 
-     - `src/` : here are the source files. All `.c` and `.cpp` files need to be here (no subfolders allowed)-
-     - `files/` : miscellaneous files, such as inputs or configurations.
-     - `ir/` : is where the ForSyDe-IR model is expected to be found by default by most of the tools. This means that you must make sure that ForSyDe introspection dumps XML files there.
-     - other generated folders, depending on the tools ran. 
+
+    application-name/ # important since it will appear in several places
+    ├── .project      # dummy file that tells the shell that this is a project         
+    ├── Makefile      # created with `generate-makefile` and then modified accordingly 
+    ├── src/          # here are the source files. All `.c` and `.cpp` files need to be
+    │   ├── *.c *.cpp # here (no subfolders allowed)
+    │   └── *.h *.hpp #                    
+    ├── files/        # miscellaneous files, such as inputs or configurations.
+    │   └── *         # 
+    ├── ir/           # is where the ForSyDe-IR model is expected to be found by default by
+    │   ├── *.xml     # most of the tools. This means that you must make sure that ForSyDe
+    │   └── *.dtd     # introspection dumps XML files there.      
+    └── *             # other generated folders, depending on the tools ran. 
 
 #### Environment variables:
 
-In order to know what environment variables are available and their values, one can check the generated shell source script in `shell/forsyde-shell.sh`
+In order to know what environment variables are available and their values, one can check the generated shell source scripts:
+ * `shell/forsyde-shell.sh` : main runner. Invokes a new shell that includes tre proper environment variables and built-in commands, as chosen during setup.
+ * `shell/shell.conf` : contains paths and other environment variables.
+
+### Dependencies
+
+The setup utility should take care of all dependencies for your OS according to the setup options. In case something fails to install, try to follow the terminal messages, install that particular dependency manually and retry the setup.
+
+You can check OS-specific dependencies by studying the scripts in `shell/setup/` (e.g. `debian_setup_utils.sh`, `osx_setup_utils.sh`).
