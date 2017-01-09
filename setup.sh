@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 # Global variables
@@ -110,7 +109,7 @@ function install-dialog () {
 			--title "System Information" \
 			--form "Fill in the information if not correct:"  \
 			15 86 0 \
-			"SystemC path: "                 1 1 "$syscpath"    1 15 70 0 \
+			"SystemC path: "                 1 1 "$syscpath"    1 15 9999 0 \
 			"SystemC libs (name): lib-"      2 1 "$arch_string" 2 26 60 0 \
 			2>&1 1>&3)
 	exec 3>&-
@@ -154,11 +153,6 @@ function install-forsyde-haskell {
 
 
 function install-forsyde-systemc {
-    # syscpath=$(bash $scriptpath/setup-forsyde-systemc.sh $shfile | tail -n 1)
-    # echo "$syscpath"
-    # read -p "What is your machine architecture [linux64]" arch
-    # if [ $arch ]; then arch_string=$arch; fi
-
     echo "[SETUP] : Installing ForSyDe-SystemC dependencies"
     echo "[SETUP] : SystemC path '$syscpath'"
     install-dependencies $dep_sysc
@@ -172,11 +166,14 @@ function install-forsyde-systemc {
     force-add-var    $setupconf "syscpath"      "$syscpath"
     add-export-var   $shconf "SYSC_ARCH"         $arch_string
     force-export-var $shconf "SYSTEMC_HOME"     "$syscpath"
-    add-export-var   $shconf "LD_LIBRARY_PATH"  "$syscpath/lib-$arch_string"
+    add-export-var   $shconf "LD_LIBRARY_PATH"  "$LD_LIBRARY_PATH:$syscpath/lib-$arch_string"
     add-export-var   $shconf "SC_FORSYDE"       "$fsspath/src"
     add-export-var   $shconf "FORSYDE_MAKEDEFS" "$scriptpath/Makefile.defs"
 }
 
+# Install ForSyDe-SystemC applications 
+# $1 : Git repository url
+# $2 : install path
 function install-apps () {
     echo "[SETUP] : Installing applications from $1 "
     mkdir -p $projdir
@@ -188,6 +185,7 @@ function install-apps () {
     force-export-var $shconf "WORKSPACE" "${projdir}"
 }
 
+# Installs the tool f2dot and sets up the environment accordingly
 function install-f2dot {
     echo "[SETUP] : Installing f2dot dependencies"
     install-dependencies $dep_f2dot
@@ -199,6 +197,8 @@ function install-f2dot {
     add-export-var $shconf "F2DOT" "$(cd $f2dotpath; pwd)/f2dot"
 }
 
+
+# Installs the tool forsyde-m2m and sets up the environment accordingly
 function install-forsyde-m2m {
     if [[ "$OSTYPE" == "darwin"* ]]; then
         echo "[SETUP] : !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
@@ -218,107 +218,109 @@ function install-forsyde-m2m {
     fi
 }
 
+# Installs valgrind and sets the environment and built-in commands
 function install-f2et {
     echo "[SETUP] : Installing valgrind"
     install-dependencies $dep_valgrind
     force-add-var $setupconf "__install__valgrind" "on"
 }
 
+# Builds the runner script according to the setup choices
 function wrap-up () {
     echo "[SETUP] : Wrapping it all up..."
     echo "[SETUP] : Setting up the shell environment"
 
-    source $shconf
+    source $shconf # at this point it contains both previous and current setup choices
     touch $shfile
-    echo '#!/bin/bash'										>  $shfile
-    echo											>> $shfile
-    echo 'PS1="\[\e[32;2m\]\w\[\e[0m\]\n[ForSyDe-Demos]$ "'					>> $shfile
-    echo											>> $shfile
-    echo 'if [ "$FORSYDE_BASH_RUN" != "" ]; then'						>> $shfile
-    echo '   return 0 # is already runníng'							>> $shfile
-    echo 'fi'											>> $shfile
-    echo 'FORSYDE_BASH_RUN=1'									>> $shfile
-    echo											>> $shfile
-    echo "source $shconf"									>> $shfile
-    echo											>> $shfile
+    echo '#!/bin/bash'									>  $shfile
+    echo										>> $shfile
+    echo 'PS1="\[\e[32;2m\]\w\[\e[0m\]\n[ForSyDe-Demos]$ "'				>> $shfile
+    echo										>> $shfile
+    echo 'if [ "$FORSYDE_BASH_RUN" != "" ]; then'					>> $shfile
+    echo '   return 0 # is already runníng'						>> $shfile
+    echo 'fi'										>> $shfile
+    echo 'FORSYDE_BASH_RUN=1'								>> $shfile
+    echo										>> $shfile
+    echo "source $shconf"								>> $shfile
+    echo										>> $shfile
     if [ "$__install__general" = on ]; then
-	echo "source $scriptpath/general.sh"							>> $shfile
+	echo "source $scriptpath/general.sh"						>> $shfile
     fi
     if [ "$__install__fsysc" = on ]; then
-	echo "source $scriptpath/sysc_script.sh"						>> $shfile
+	echo "source $scriptpath/sysc_script.sh"					>> $shfile
     fi
     if [ "$__install__valgrind" = on ]; then    
-	echo "source $scriptpath/valgrind_script.sh"						>> $shfile
+	echo "source $scriptpath/valgrind_script.sh"					>> $shfile
     fi
     if [ "$__install__f2dot" = on ]; then
-	echo "source $scriptpath/f2dot_script.sh"						>> $shfile
+	echo "source $scriptpath/f2dot_script.sh"					>> $shfile
     fi
     if [ "$__install__fm2m" = on ]; then
-	echo "source $scriptpath/fm2m_script.sh"						>> $shfile
+	echo "source $scriptpath/fm2m_script.sh"					>> $shfile
     fi
-    echo											>> $shfile
-    echo 'echo "########################################################################'	>> $shfile 
-    echo											>> $shfile
-    echo "                  =  ForSyDe Shell v$version ="					>> $shfile 
-    echo											>> $shfile
-    echo " Libraries included:"       								>> $shfile 
+    echo										>> $shfile
+    echo 'echo "########################################################################'>> $shfile 
+    echo										>> $shfile
+    echo "                  =  ForSyDe Shell v$version ="				>> $shfile 
+    echo										>> $shfile
+    echo " Libraries included:"       							>> $shfile 
     if [ "$__install__fhask" = on ]; then
-	echo " * ForSyDe-Haskell"       					       		>> $shfile
+	echo " * ForSyDe-Haskell"       					       	>> $shfile
     fi
     if [ "$__install__fsysc" = on ]; then
-	echo " * ForSyDe-SystemC"              							>> $shfile
+	echo " * ForSyDe-SystemC"              						>> $shfile
     fi
-    echo											>> $shfile
-    echo " Tools included:"       								>> $shfile
+    echo										>> $shfile
+    echo " Tools included:"       							>> $shfile
     if [ "$__install__f2dot" = on ]; then
-	echo ' * f2dot           script path : \$F2DOT'					        >> $shfile
+	echo ' * f2dot           script path : \$F2DOT'					>> $shfile
     fi
     if [ "$__install__fm2m" = on ]; then
-	echo ' * f2sdf3          script path : \$F2SDF3'	       			        >> $shfile
+	echo ' * f2sdf3          script path : \$F2SDF3'	       			>> $shfile
     fi
-    echo											>> $shfile
+    echo										>> $shfile
     if [ "$__install__fsysc_demo" = on ]; then
-	echo " ForSyDe-SystemC applications:"							>> $shfile
+	echo " ForSyDe-SystemC applications:"						>> $shfile
 	for app in $(find $projdir -type f -name '.project'); do
 	    appname=$(relative-path $projdir $(dirname $app))
-	    echo " * $appname"       								>> $shfile	
+	    echo " * $appname"       							>> $shfile	
 	done
     fi
-    echo											>> $shfile
-    echo " To list all commands provided by the shell type 'list-commands'."			>> $shfile
-    echo											>> $shfile
-    echo "########################################################################"		>> $shfile
-    echo '"'											>> $shfile
-    echo											>> $shfile
-    echo "cd \$WORKSPACE"									>> $shfile
+    echo										>> $shfile
+    echo " To list all commands provided by the shell type 'list-commands'."		>> $shfile
+    echo										>> $shfile
+    echo "########################################################################"	>> $shfile
+    echo '"'										>> $shfile
+    echo										>> $shfile
+    echo "cd \$WORKSPACE"								>> $shfile
     if [[ "$OSTYPE" == "linux-gnu" ]]; then
-	echo "export LS_OPTIONS='--color=auto'"							>> $shfile
-	echo 'eval "`dircolors`"'							       	>> $shfile
+	echo "export LS_OPTIONS='--color=auto'"						>> $shfile
+	echo 'eval "`dircolors`"'							>> $shfile
     elif [[ "$OSTYPE" == "darwin"* ]]; then
-	echo "export LS_OPTIONS='-G'"	        						>> $shfile
-	#echo 'export CLICOLOR=YES'							       	>> $shfile
+	echo "export LS_OPTIONS='-G'"	        					>> $shfile
+	#echo 'export CLICOLOR=YES'						       	>> $shfile
     fi
-    echo "alias ls='ls \$LS_OPTIONS'"								>> $shfile
-    echo											>> $shfile
-    echo "function list-commands () {"								>> $shfile
-    echo '    echo " Commands provided by this shell (type help-<command> for manual):'		>> $shfile
+    echo "alias ls='ls \$LS_OPTIONS'"							>> $shfile
+    echo										>> $shfile
+    echo "function list-commands () {"							>> $shfile
+    echo '    echo " Commands provided by this shell (type help-<command> for manual):'	>> $shfile
     if [ "$__install__general" = on ]; then
-	echo "$(source $scriptpath/general.sh; _print-general);"				>> $shfile
+	echo "$(source $scriptpath/general.sh; _print-general);"			>> $shfile
     fi
     if [ "$__install__fsysc" = on ]; then
-	echo "$(source $scriptpath/sysc_script.sh; _print-general);"				>> $shfile
+	echo "$(source $scriptpath/sysc_script.sh; _print-general);"			>> $shfile
     fi
     if [ "$__install__valgrind" = on ]; then    
-	echo " * $(source $scriptpath/valgrind_script.sh; info-execute-model)"			>> $shfile
+	echo " * $(source $scriptpath/valgrind_script.sh; info-execute-model)"		>> $shfile
     fi
     if [ "$__install__f2dot" = on ]; then
-	echo " * $(source $scriptpath/f2dot_script.sh; info-plot)"				>> $shfile
+	echo " * $(source $scriptpath/f2dot_script.sh; info-plot)"			>> $shfile
     fi
     if [ "$__install__fm2m" = on ]; then
-	echo " * $(source $scriptpath/fm2m_script.sh; info-f2sdf3)"				>> $shfile
+	echo " * $(source $scriptpath/fm2m_script.sh; info-f2sdf3)"			>> $shfile
     fi
-    echo '"'											>> $shfile
-    echo '}'											>> $shfile
+    echo '"'										>> $shfile
+    echo '}'										>> $shfile
 
 }
 
@@ -355,12 +357,12 @@ if [[ $@ == *"-no-dialog"* ]]; then
     if [[ $@ == *"-uninstall"* ]]; then uninstall-shell; fi
     __install__general=on
 else
+    #load previous config
+    touch $shconf
+    touch $setupconf
+    source $setupconf
     install-dialog;
 fi
-
-#load previous config
-touch $setupconf
-source $setupconf
 
 if [ "$__install__general" = on ];    then init-shell; fi
 if [ "$__install__fhask" = on ];      then install-forsyde-haskell; fi

@@ -12,29 +12,41 @@ function clone-repo () {
     fi
 }
 
+# Returns the value of a variable in a configuration file 
+# without sourcing it (thus overwriting the existing ones)
+# $1 : config file
+# $2 : variable (will be expanded)
+function get-var () {
+    . $1
+    local name=$2
+    local value=(${!name})
+    echo "$value"
+}
 
 # Force-adds a variable to configuration file.
 # $1 : config file
-# $2 : variable name as string (will be expanded)
+# $2 : variable name as string 
 # $3 : variable value as string
 function force-add-var {
-    source $1
     name=$2
-    value=(${!name})
+    #value=(${!name})
+    value=$(get-var $1 $2)
     if [ -n "$value" ]; then	
-	grep -v "$2=" $1 > temp && mv temp $1
+	grep -v "$name=" $1 > temp && mv temp $1
     fi
-    echo "$2=$3" >> $1 
+    echo "$name=$3" >> $1 
 }
 
 # Adds a variable to $1 if it is not initialized and exports it.
 # $1 : config file
-# $2 : variable name as string (will be expanded)
+# $2 : variable name as string
 # $3 : variable value as string
 function add-export-var {
-    source $1
-    name=$2
-    value=(${!name})
+    #source $1
+    # name=$2
+    #value=(${!name})
+    value=$(get-var $1 $2)
+    echo $value
     if [ -z "$value" ]; then
 	echo "export $2=$3" >> $1 
     fi
@@ -42,12 +54,13 @@ function add-export-var {
 
 # Force-adds a variable to $1 and exports it.
 # $1 : config file
-# $2 : variable name as string (will be expanded)
+# $2 : variable name as string
 # $3 : variable value as string
 function force-export-var {
-    source $1
-    name=$2
-    value=(${!name})
+    #source $1
+    # name=$2
+    #value=(${!name})
+    value=$(get-var $1 $2)
     if [ -n "$2" ]; then	
 	grep -v "$2=" $1 > temp && mv temp $1
     fi
