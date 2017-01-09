@@ -50,7 +50,12 @@ function reset-shell () {
 function uninstall-shell () {
     read -p "Are you sure you want to completely remove the shell along with the install tools and libraries? [N]" yn
     case $yn in
-	[Yy]* ) rm -rf $shfile $shconf $setupconf $libdir $tooldir $projdir forsyde-shell ;;
+	[Yy]* ) rm -rf $shfile $shconf $setupconf $libdir $tooldir forsyde-shell ;;
+	* ) ;;
+    esac
+    read -p "Would you like to keep the workspace? [Y]" yn
+    case $yn in
+	[Nn]* ) rm -rf $projdir ;;
 	* ) ;;
     esac
     exit 0

@@ -6,11 +6,12 @@
 !setup.*
 !shell/*
 !shell/setup/*
+
 libs/
 tools/
 *~
 workspace/
 shell/forsyde-shell.sh*
-shell/shell.conf*
-shell/setup/setup.conf*
+shell/*.conf
+shell/setup/*.conf
 *#
