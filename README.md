@@ -59,14 +59,14 @@ A project may be anywhere accessible on the file system, although it is recommen
     application-name/ # Important since it will appear in several places
     ├── .project      # Dummy file that tells the shell that this is a project
     ├── Makefile      # Created with `generate-makefile` and then modified accordingly 
-    ├── src/          # here are the source files. All `.c` and `.cpp` files need to be
-    │   ├── *.c *.cpp # here (no subfolders allowed)
+    ├── src/          # Source files. All `.c` and `.cpp` files need to be here (no 
+    │   ├── *.c *.cpp # subfolders allowed)
     │   └── *.h *.hpp #
     ├── files/        # Miscellaneous files, such as inputs or configurations.
     │   └── *         # 
-    ├── xml/          # Where the ForSyDe-XML intermediate representation is expected to 
-    │   ├── *.xml     # be found by other tools. This means that you must make sure that
-    │   └── *.dtd     # ForSyDe introspection dumps XML files there.
+    ├── xml/          # Here is where tools expect the ForSyDe-XML intermediate 
+    │   ├── *.xml     # representation to be found. You must make sure that ForSyDe
+    │   └── *.dtd     # introspection dumps XML files *HERE*.
     └── *             # Other generated folders, depending on the tools ran. 
 
 A project structure can be created issuing the commands:
