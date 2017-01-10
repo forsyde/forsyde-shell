@@ -10,14 +10,14 @@ function f2sdf3 () {
     if [[ "${@:2}" == *"-p"* ]]; then
 	permissive_str="permissive=yes"
     fi
-    mkdir -p sdf3
-    cp $FM2M_HOME/DTD/forsyde.dtd ir
-    cp $FM2M_HOME/DTD/forsyde_types.dtd ir
-    saxonb-xslt -s:$1 -xsl:$F2SDF3 -o:sdf3/log -dtd:off -ext:on $debug_str $permissive_str application-name=$projname types=$(cd ir; pwd)/types.xml inputFolder=$(cd ir; pwd)/ outputFolder=sdf3 2>&1 | tee sdf3/log | grep 'ERROR\|WARNING'
+    mkdir -p xml
+    cp $FM2M_HOME/DTD/forsyde.dtd xml
+    cp $FM2M_HOME/DTD/forsyde_types.dtd xml
+    saxonb-xslt -s:$1 -xsl:$F2SDF3 -o:xml/f2sdf3.log -dtd:off -ext:on $debug_str $permissive_str application-name=$projname types=$(cd xml; pwd)/types.xml inputFolder=$(cd xml; pwd)/ outputFolder=xml 2>&1 | tee xml/f2sdf3.log | grep 'ERROR\|WARNING'
 }
 
 function info-f2sdf3 () {
-    echo "f2sdf3 : converts generated ForSyDe-XML IR into SDF3 format"
+    echo "f2sdf3 : converts generated ForSyDe-XML into SDF3 format"
 }
 
 function help-f2sdf3 () {

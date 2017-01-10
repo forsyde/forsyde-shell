@@ -24,7 +24,7 @@ function plot () {
 
 
 function info-plot () {
-    echo "plot : plots generated ForSyDe-XML IR"
+    echo "plot : plots generated ForSyDe-XML intermediate representation"
 }
 
 function help-plot () {

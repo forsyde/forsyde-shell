@@ -56,20 +56,20 @@ A fully set up shell has the following structure:
 
 A project may be anywhere accessible on the file system, although it is recommended to be somewhere under `workspace`. In order to minimize the overhead of setting or passing parameters around or dealing with complex scripts, ForSyDe-Shell operates on the following conventional project structure: 
 
-    application-name/ # important since it will appear in several places
-    ├── .project      # dummy file that tells the shell that this is a project         
-    ├── Makefile      # created with `generate-makefile` and then modified accordingly 
+    application-name/ # Important since it will appear in several places
+    ├── .project      # Dummy file that tells the shell that this is a project
+    ├── Makefile      # Created with `generate-makefile` and then modified accordingly 
     ├── src/          # here are the source files. All `.c` and `.cpp` files need to be
     │   ├── *.c *.cpp # here (no subfolders allowed)
-    │   └── *.h *.hpp #                    
-    ├── files/        # miscellaneous files, such as inputs or configurations.
+    │   └── *.h *.hpp #
+    ├── files/        # Miscellaneous files, such as inputs or configurations.
     │   └── *         # 
-    ├── ir/           # is where the ForSyDe-IR model is expected to be found by default by
-    │   ├── *.xml     # most of the tools. This means that you must make sure that ForSyDe
-    │   └── *.dtd     # introspection dumps XML files there.      
-    └── *             # other generated folders, depending on the tools ran. 
+    ├── xml/          # Where the ForSyDe-XML intermediate representation is expected to 
+    │   ├── *.xml     # be found by other tools. This means that you must make sure that
+    │   └── *.dtd     # ForSyDe introspection dumps XML files there.
+    └── *             # Other generated folders, depending on the tools ran. 
 
-This can be simplified using:
+A project structure can be created issuing the commands:
 
     mkdir <application-name>
     cd <application-name>
@@ -78,7 +78,7 @@ This can be simplified using:
 #### Environment variables:
 
 In order to know what environment variables are available and their values, one can check the generated shell source scripts:
- * `shell/forsyde-shell.sh` : main runner. Invokes a new shell that includes tre proper environment variables and built-in commands, as chosen during setup.
+ * `shell/forsyde-shell.sh` : main runner. Invokes a new shell that includes the proper environment variables and built-in commands, as chosen during setup.
  * `shell/shell.conf` : contains paths and other environment variables.
 
 ### Dependencies

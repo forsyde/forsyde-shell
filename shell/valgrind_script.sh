@@ -1,14 +1,29 @@
+# Runs callgrind and annotates output with function names.
+# $1 : intermediate un-anotated file path
+# $2 : annotated output
+function _exec_to_callgrind () {
+    mkdir -p xml
+    mkdir -p exec_times
+    valgrind --tool=callgrind -q --dump-after=sc_core::sc_start \
+	--callgrind-out-file=$1 ./run.x
+    touch $2
+    callgrind_annotate $1 > $2
+    rm $1
+}
+
 function _exec_to_csv () {
+    ls xml/*.xml  >/dev/null || (echo "ERROR: Intermediate representation is missing. Aborting!"; return 0)
     if [[ "$OSTYPE" == "linux-gnu" ]]; then
 	func_list=$(xml_grep "process_network/leaf_process/process_constructor/argument[@name='_func']" \
-			     ir/*.xml | grep -o -P '(?<=value=").*(?=")' | sort -u)
+			     xml/*.xml | grep -o -P '(?<=value=").*(?=")' | sort -u)
     elif [[ "$OSTYPE" == "darwin"* ]]; then
-	func_list=$(python -c "import xml.etree.ElementTree as ET; import glob; print '\n'.join([node.get('value') for name in glob.glob('ir/*.xml') for node in ET.parse(name).findall(\"./leaf_process/process_constructor/argument[@name='_func']\")])")
+	func_list=$(python -c "import xml.etree.ElementTree as ET; import glob; print '\n'.join([node.get('value') for name in glob.glob('xml/*.xml') for node in ET.parse(name).findall(\"./leaf_process/process_constructor/argument[@name='_func']\")])")
     else
 	echo "Unknown OS! Cannot extract runtime execution"
 	exit 1
     fi
-    echo "Harvesting info about the following functions:\n $func_list"
+    echo "Harvesting info about the following functions:"
+    echo "$func_list"
     echo "" > $2
     for func in $func_list; do
         echo "$func $(less $1 | grep -e $func | awk '{print $1}' | tr -d ,)" >> $2
@@ -38,37 +53,18 @@ function execute-model () {
     annotated_cal=exec_times/annotated$timestamp.out
     exec_csv=exec_times/exec_$projname$timestamp.csv
     exec_pdf=exec_times/exec_$projname$timestamp.pdf
-	mkdir -p ir
 
-    if [[ "$@" == *"-p"* ]]; then
-	mkdir -p exec_times
-	valgrind --tool=callgrind -q --dump-after=sc_core::sc_start \
-	    --callgrind-out-file=$callgrind_out ./run.x
-	touch $annotated_cal
-	callgrind_annotate $callgrind_out > $annotated_cal
-	rm $callgrind_out
-    else
-	./run.x
-    fi
+    case $@ in
+	-p )   _exec_to_callgrind $callgrind_out $annotated_cal ;;
+	-csv ) _exec_to_callgrind $callgrind_out $annotated_cal;
+	       _exec_to_csv $annotated_cal $exec_csv ;;
+	-pdf ) _exec_to_callgrind $callgrind_out $annotated_cal; 
+	       _exec_to_csv $annotated_cal $exec_csv;
+	       _exec_to_pdf $exec_csv $exec_pdf;;
+	'' )   ./run.x ;;
+	* )    echo 'ERROR: cannot recognize parameter!'; help-execute-model;;
+    esac
 
-    if [[ "$@" == *"-csv"* ]]; then
-	if [[ ! -d ir ]] || [[ ! -f $annotated_cal ]]; then 
-	    echo "Intermediate representation or extracted execution is missing. Will not write csv!"; 
-	    return 0
-	fi
-	_exec_to_csv $annotated_cal $exec_csv
-    fi
-
-    if [[ "$@" == *"-pdf"* ]]; then
-	if [[ ! -d ir ]] || [[ ! -f $annotated_cal ]]; then 
-	    echo "Intermediate representation or extracted execution is missing. Will not plot pdf!"; 
-	    return 0
-	fi
-	if [[ ! -f $exec_csv ]]; then   
-	    _exec_to_csv $annotated_cal $exec_csv
-        fi 
-	_exec_to_pdf $exec_csv $exec_pdf
-    fi
 }
 
 
@@ -81,7 +77,7 @@ function help-execute-model () {
     echo "By default, this command just executes a compiled model. By invoking it 
 with the appropriate flags it can extract run-time measurements.
 
-Usage: execute-model [-p [-csv] [-pdf]]
+Usage: execute-model [-p|-csv|-pdf]
 
 -p            Runs model extracting performance metrics with 'callgrind'
 -csv          Extracts execution times for process functions

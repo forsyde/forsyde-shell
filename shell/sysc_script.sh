@@ -23,6 +23,7 @@ function init-sysc-project () {
     mkdir -p src
     mkdir -p files
     touch .project
+    mkdir -p xml
 }
 
 
@@ -31,7 +32,8 @@ function clean-project {
 	echo "The working directory is not a ForSyDe project. Abandoning command!"
 	return
     fi
-    find . -maxdepth 1 -mindepth 1 -not \( -name 'src' -or -name 'files' -or -name 'Makefile' -or -name '.project' \)  -exec rm -rf "{}" \;
+    rm xml/*
+    find . -maxdepth 1 -mindepth 1 -not \( -name 'src' -or -name 'files' -or -name 'xml' -or -name 'Makefile' -or -name '.project' \)  -exec rm -rf "{}" \;
 }
 
 
