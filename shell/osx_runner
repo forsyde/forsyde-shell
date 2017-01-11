@@ -1,2 +1,2 @@
 #!/bin/bash
-bash --rcfile /Users/georgeungureanu/Work/forsyde-shell/shell/forsyde-shell.sh
+bash --rcfile /Users/jose.edil/Development/Haskell/ForSyDe/forsyde-shell/shell/forsyde-shell.sh
