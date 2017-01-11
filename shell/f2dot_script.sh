@@ -17,9 +17,9 @@ function plot () {
     echo "$conf_file"
     if [ ! -f files/$conf_file ]; then 	
 	mkdir -p files 
-	python $F2DOT -g -m $mode -o files > /dev/null
+	python2.7 $F2DOT -g -m $mode -o files > /dev/null
     fi 
-    python $F2DOT -c files/$conf_file -m $mode -o plots "$@"
+    python2.7 $F2DOT -c files/$conf_file -m $mode -o plots "$@"
 }
 
 
@@ -28,7 +28,7 @@ function info-plot () {
 }
 
 function help-plot () {
-    python $F2DOT -h
+    python2.7 $F2DOT -h
     info-f2dot
     echo "
 
