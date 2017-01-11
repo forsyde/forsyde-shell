@@ -5,7 +5,7 @@ The current project provides a set of scripts to set up the ForSyDe ecosystem fo
 ### Installation
 
 Currently the installation script works on :
- * modern Debian distributions of Linux (tested with Ubuntu 14.04, Ubuntu 16.01). Dependencies are installed with [APT](https://wiki.debian.org/Apt).
+ * modern Debian distributions of Linux (tested with Ubuntu 14.04, Ubuntu 16.04). Dependencies are installed with [APT](https://wiki.debian.org/Apt).
  * OS X ( tested with 10.11 El Capitan). Dependencies are installed with [MacPorts](https://www.macports.org).
  
 On other OS, for the time being you can study `setup.sh` to install manually all dependencies.

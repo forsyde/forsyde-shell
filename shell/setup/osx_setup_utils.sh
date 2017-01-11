@@ -12,8 +12,8 @@ if [[ $(port installed dialog | grep "None" ) ]]; then sudo port install dialog;
 
 dep_general='git'
 dep_sysc='boost wget'
-dep_f2dot='py-pygraphviz graphviz-gui'
-dep_valgrind='valgrind graphviz gnuplot'
+dep_f2dot='python27 graphviz graphviz-gui py27-pygraphviz'
+dep_valgrind='valgrind gnuplot'
 #dep_fm2m='saxon'
 
 #xcode-select --install

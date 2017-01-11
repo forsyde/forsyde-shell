@@ -12,6 +12,7 @@ tools/
 *~
 workspace/
 shell/forsyde-shell.sh*
+shell/osx_runner
 shell/*.conf
 shell/setup/*.conf
 *#
