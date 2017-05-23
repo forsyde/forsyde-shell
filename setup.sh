@@ -172,6 +172,7 @@ function install-forsyde-systemc {
     add-export-var   $shconf "SYSC_ARCH"         $arch_string
     force-export-var $shconf "SYSTEMC_HOME"     "$syscpath"
     add-export-var   $shconf "LD_LIBRARY_PATH"  "$LD_LIBRARY_PATH:$syscpath/lib-$arch_string"
+    add-export-var   $shconf "DYLD_LIBRARY_PATH" "$DYLD_LIBRARY_PATH:$syscpath/lib-$arch_string"
     add-export-var   $shconf "SC_FORSYDE"       "$fsspath/src"
     add-export-var   $shconf "FORSYDE_MAKEDEFS" "$scriptpath/Makefile.defs"
 }
